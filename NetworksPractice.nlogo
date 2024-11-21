@@ -190,6 +190,20 @@ to refresh
   reset-ticks
   ask patches [set pcolor white]
 end
+
+to friendship-paradox
+  ask turtles [
+    let count-neighbors-friends mean [ count link-neighbors ] of link-neighbors
+    let count-friends count link-neighbors
+    ifelse count-friends < count-neighbors-friends [
+      let how-bad 19.9 - count-friends / count-neighbors-friends * 4
+      set color how-bad
+    ] [
+      let how-good 69.9 - count-neighbors-friends / count-friends * 4
+      set color how-good
+    ]
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 237
@@ -244,7 +258,7 @@ num-nodes
 num-nodes
 0
 100
-100.0
+83.0
 1
 1
 NIL
@@ -281,7 +295,7 @@ true
 true
 "" ""
 PENS
-"random" 1.0 1 -2674135 true "" "histogram [count link-neighbors] of turtles with [color = red]"
+"random" 1.0 1 -955883 true "" "histogram [count link-neighbors] of turtles with [color = red]"
 "small-world" 1.0 1 -13345367 true "" "histogram [count link-neighbors] of turtles with [color = blue]"
 "barabasi" 1.0 1 -10899396 true "" "histogram [count link-neighbors] of turtles with [color = green]"
 
@@ -353,10 +367,10 @@ mean [ nw:clustering-coefficient ] of turtles
 11
 
 BUTTON
-955
-489
-1066
-522
+958
+698
+1069
+731
 NIL
 launch-virus
 NIL
@@ -370,10 +384,10 @@ NIL
 1
 
 SLIDER
-955
-523
-1127
-556
+958
+732
+1130
+765
 transmission
 transmission
 0
@@ -385,10 +399,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-1067
-490
-1211
-523
+1070
+699
+1214
+732
 NIL
 make-step-simple
 NIL
@@ -402,10 +416,10 @@ NIL
 1
 
 PLOT
-955
-557
-1159
-715
+958
+766
+1162
+924
 infected-healthy
 NIL
 NIL
@@ -426,7 +440,7 @@ BUTTON
 149
 218
 random
-refresh\nnw:generate-random turtles links num-nodes p [ set color blue ]\nlayout-circle turtles 15
+refresh\nnw:generate-random turtles links num-nodes p [ set color orange ]\nlayout-circle turtles 15
 NIL
 1
 T
@@ -504,7 +518,7 @@ BUTTON
 155
 395
 barabasi
-refresh\nnw:generate-preferential-attachment turtles links num-nodes barabasi-edges-per-node [ set color blue ]\nlayout-circle turtles 15\ntick
+refresh\nnw:generate-preferential-attachment turtles links num-nodes barabasi-edges-per-node [ set color green ]\nlayout-circle turtles 15\ntick
 NIL
 1
 T
@@ -550,10 +564,10 @@ NIL
 1
 
 BUTTON
-1212
-490
-1369
-523
+1215
+699
+1372
+732
 NIL
 make-step-complex
 NIL
@@ -567,10 +581,10 @@ NIL
 1
 
 SLIDER
-1137
-523
-1309
-556
+1140
+732
+1312
+765
 threshold
 threshold
 0
@@ -614,7 +628,7 @@ true
 true
 "" ""
 PENS
-"random" 1.0 2 -2674135 true "" ""
+"random" 1.0 2 -955883 true "" ""
 "small-world" 1.0 2 -13345367 true "" ""
 "barabasi" 1.0 2 -10899396 true "" ""
 
@@ -699,6 +713,87 @@ PENS
 "random" 1.0 0 -2674135 true "" ""
 "small-world" 1.0 0 -13345367 true "" ""
 "barabasi" 1.0 0 -10899396 true "" ""
+
+TEXTBOX
+958
+680
+1108
+698
+some stuff from prac
+12
+0.0
+1
+
+BUTTON
+965
+549
+1244
+582
+n-friends/mean-n-friends-of-neighbors
+friendship-paradox
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+TEXTBOX
+967
+515
+1117
+549
+the greener - the better\nthe redder - the worse
+12
+0.0
+1
+
+MONITOR
+965
+587
+1082
+632
+number of green
+count turtles with [color > 60 and color < 70]
+0
+1
+11
+
+MONITOR
+1082
+587
+1184
+632
+number of red
+count turtles with [color > 10 and color < 20]
+17
+1
+11
+
+MONITOR
+965
+634
+1058
+679
+mean friends
+mean [count link-neighbors] of turtles
+2
+1
+11
+
+MONITOR
+1060
+635
+1234
+680
+mean friends of neighbors
+mean [mean [ count link-neighbors ] of link-neighbors] of turtles
+2
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
