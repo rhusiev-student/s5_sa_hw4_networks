@@ -8,6 +8,17 @@ turtles-own [
   current-angle
 ]
 
+patches-own [
+  ;rumors
+  times-heard-rumor
+  believed
+  is-sceptical
+
+  ;hats
+  fashion-threshold
+  dressed
+]
+
 to setup
   refresh
   create-turtles num-nodes [
@@ -342,6 +353,90 @@ to bounce_turtle
   if abs pycor = max-pycor
     [ set heading (180 - heading) ]
 end
+
+to model-rumor-spread
+  refresh
+
+  ask patches [
+    set pcolor blue
+    set times-heard-rumor 0
+    set believed false
+    set is-sceptical one-of [0 1]
+  ]
+
+  ask n-of ( rumor-initiators-fraction * count patches ) patches[
+    set pcolor red
+    set believed true
+  ]
+
+  let steps 0
+  while [steps < simulation-duration-bound and count patches with [pcolor = blue] > 0][
+    ask patches with [pcolor = red][
+      if-else use-moore-spread = true[
+        ask one-of neighbors[
+          set   times-heard-rumor   times-heard-rumor + 1
+        ]
+      ][
+        ask one-of neighbors4[
+          set   times-heard-rumor   times-heard-rumor + 1
+        ]
+      ]
+    ]
+
+    ask patches with [pcolor = blue][
+      if times-heard-rumor > 0 [
+        if-else is-sceptical = 1 and allow-sceptics = true and times-heard-rumor > 2 [ ;patch is sceptic
+            set pcolor red
+            set believed true
+        ][ ;patch is dumb
+          set pcolor red
+          set believed true
+        ]
+      ]
+    ]
+
+    tick
+    set steps steps + 1
+  ]
+
+end
+
+to model-fashion-spread
+  refresh
+
+  let neighbor-threshold 8
+  if use-moore-spread = false[
+    set neighbor-threshold  4
+  ]
+
+  ask patches [
+    set pcolor blue
+    set fashion-threshold random neighbor-threshold
+    set dressed false
+    set pcolor yellow
+  ]
+
+  let steps 0
+  while [steps < simulation-duration-bound and count patches with [dressed = false] > 0][
+    ask patches with [dressed = false][
+      if-else use-moore-spread = true[
+        if count neighbors with [dressed = true] >= fashion-threshold[
+          set dressed true
+          set pcolor magenta + 2
+        ]
+      ][
+        if count neighbors4 with [dressed = true] >= fashion-threshold[
+          set dressed true
+          set pcolor magenta + 2
+        ]
+      ]
+    ]
+
+    tick
+    set steps steps + 1
+  ]
+
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 237
@@ -411,7 +506,7 @@ p
 p
 0
 1
-0.01
+0.32
 0.01
 1
 NIL
@@ -798,7 +893,7 @@ small-world-initial-neighbors
 small-world-initial-neighbors
 0
 20
-0.0
+20.0
 1
 1
 NIL
@@ -958,10 +1053,10 @@ PENS
 "walk" 1.0 0 -5204280 true "" ""
 
 SLIDER
-1008
-796
-1180
-829
+533
+781
+705
+814
 lambda
 lambda
 0.01
@@ -973,20 +1068,20 @@ NIL
 HORIZONTAL
 
 CHOOSER
-1009
-918
-1147
-963
+534
+903
+672
+948
 RandomWalk
 RandomWalk
 "logistic" "constraint" "diffusion" "levy" "lazy" "lattice" "pearson"
 6
 
 SLIDER
-1008
-760
-1180
-793
+533
+745
+705
+778
 step-size
 step-size
 1
@@ -998,10 +1093,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1008
-837
-1180
-870
+533
+822
+705
+855
 max-angle
 max-angle
 0.5
@@ -1013,10 +1108,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1009
-881
-1224
-914
+534
+866
+749
+899
 r
 r
 0.01
@@ -1028,10 +1123,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-1009
-977
-1202
-1010
+534
+962
+727
+995
 random-walk-steps
 random-walk-steps
 1
@@ -1043,10 +1138,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-1234
-760
-1419
-1008
+759
+745
+944
+993
 NIL
 random-walk-network
 NIL
@@ -1058,6 +1153,130 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+1004
+746
+1236
+779
+rumor-initiators-fraction
+rumor-initiators-fraction
+0.01
+1
+0.2
+0.01
+1
+NIL
+HORIZONTAL
+
+SWITCH
+1009
+904
+1245
+937
+use-moore-spread
+use-moore-spread
+0
+1
+-1000
+
+SLIDER
+1006
+865
+1262
+898
+simulation-duration-bound
+simulation-duration-bound
+2
+1000
+48.0
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+1005
+792
+1162
+825
+allow-sceptics
+allow-sceptics
+1
+1
+-1000
+
+BUTTON
+1277
+743
+1427
+831
+NIL
+model-rumor-spread
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+1446
+657
+1841
+901
+Rumor spread
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"corrupted by rumor" 1.0 0 -2674135 true "" "plotxy ticks count patches with [believed = true]"
+"not corrupted by rumor" 1.0 0 -13345367 true "" "plotxy ticks count patches with [believed = false]"
+
+BUTTON
+1277
+849
+1429
+946
+NIL
+model-fashion-spread
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+1448
+916
+1842
+1066
+Hat spread
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"undressed" 1.0 0 -1184463 true "" "plotxy ticks count patches with [dressed = false]"
+"dressed" 1.0 0 -3508570 true "" "plotxy ticks count patches with [dressed = true]"
 
 @#$#@#$#@
 ## WHAT IS IT?
