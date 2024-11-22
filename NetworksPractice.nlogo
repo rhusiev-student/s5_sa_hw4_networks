@@ -3,17 +3,20 @@ extensions[nw]
 turtles-own [
   infected?
   checked
+
+  ;walk data
+  current-angle
 ]
 
 to setup
-  clear-all
-  ask patches [set pcolor white]
+  refresh
   create-turtles num-nodes [
     set color blue
     set shape "circle"
-  ]
 
-  reset-ticks
+    set heading random 360
+    set current-angle random 1
+  ]
 end
 
 ;to random-graph
@@ -79,7 +82,10 @@ to compare-networks-with-n
   refresh
   reset-ticks
   set num-nodes 5
+
   while [num-nodes < 100] [
+
+    ;random
     clear-turtles
     nw:generate-random turtles links num-nodes p [ set color red ]
     set-current-plot "apl"
@@ -93,6 +99,15 @@ to compare-networks-with-n
     set-current-plot-pen "random"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
 
+    set-current-plot "mean-path-length of num-nodes"
+    set-current-plot-pen "random"
+      ifelse nw:mean-path-length = False [
+      plotxy num-nodes 0
+    ] [
+      plotxy ticks nw:mean-path-length
+    ]
+
+    ;small-world
     clear-turtles
     nw:generate-watts-strogatz turtles links num-nodes small-world-initial-neighbors small-world-rewiring-p [
       fd 10
@@ -109,6 +124,15 @@ to compare-networks-with-n
     set-current-plot-pen "small-world"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
 
+    set-current-plot "mean-path-length of num-nodes"
+    set-current-plot-pen "small-world"
+      ifelse nw:mean-path-length = False [
+      plotxy num-nodes 0
+    ] [
+      plotxy ticks nw:mean-path-length
+    ]
+
+    ;barabasi
     clear-turtles
     nw:generate-preferential-attachment turtles links num-nodes barabasi-edges-per-node [ set color green ]
     set-current-plot "apl"
@@ -121,6 +145,14 @@ to compare-networks-with-n
     set-current-plot "clustering"
     set-current-plot-pen "barabasi"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
+
+    set-current-plot "mean-path-length of num-nodes"
+    set-current-plot-pen "barabasi"
+      ifelse nw:mean-path-length = False [
+      plotxy num-nodes 0
+    ] [
+      plotxy ticks nw:mean-path-length
+    ]
 
     set num-nodes num-nodes + 1
     tick
@@ -145,45 +177,45 @@ to complete-graph
 
 end
 
-to launch-virus
-  ask turtles [
-    set color blue
-    set infected? false]
+;to launch-virus
+;  ask turtles [
+;    set color blue
+;    set infected? false]
 
-  ask one-of turtles [
-    set color red
-    set infected? true
-  ]
-end
+;  ask one-of turtles [
+;    set color red
+;    set infected? true
+;  ]
+;end
 
-to make-step-simple
+;to make-step-simple
 
-  ask turtles [
-    if count link-neighbors with [color = red] > 0 [
-      repeat count link-neighbors with [color = red] [
-        if random-float 1 < transmission [
-          set infected? true
-        ]
-      ]
-    ]
-  ]
+;  ask turtles [
+;    if count link-neighbors with [color = red] > 0 [
+;      repeat count link-neighbors with [color = red] [
+;        if random-float 1 < transmission [
+;          set infected? true
+;        ]
+;      ]
+;    ]
+;  ]
+;
+;  ask turtles [
+;    if infected? = true [set color red]
+; ]
+;  tick
+;end
 
-  ask turtles [
-    if infected? = true [set color red]
-  ]
-  tick
-end
-
-to make-step-complex
-  ask turtles [
-    if count link-neighbors with [color = red] > 0 [
-      if count link-neighbors with [color = red] / count link-neighbors > threshold [
-          set color red
-        ]
-      ]
-    ]
-  tick
-end
+;to make-step-complex
+;  ask turtles [
+;    if count link-neighbors with [color = red] > 0 [
+;      if count link-neighbors with [color = red] / count link-neighbors > threshold [
+;          set color red
+;        ]
+;      ]
+;    ]
+;  tick
+;end
 
 to refresh
   clear-all
@@ -203,6 +235,112 @@ to friendship-paradox
       set color how-good
     ]
   ]
+end
+
+to random-walk-network
+  setup
+  layout-circle turtles 15
+  ask turtles[
+    set color violet + 2
+  ]
+
+  let steps 0
+  while [steps < random-walk-steps][
+
+  ask turtles[
+    if-else not can-move? 1 [
+      bounce_turtle
+      fd 1
+    ][
+			
+  if RandomWalk = "pearson" [
+      set heading random 360
+      fd step-size
+  ]
+
+  if RandomWalk = "lattice" [
+         set heading one-of [0 90 180 270]
+      fd step-size
+  ]
+
+   if RandomWalk = "lazy" [
+          set heading random 360
+      fd lambda ^ (ticks / 100) * step-size
+  ]
+
+   if RandomWalk = "levy" [
+         set heading random 360
+      fd random-poisson 1
+  ]
+
+  if RandomWalk = "diffusion" [
+       set heading random 360
+      fd random-normal step-size 1
+  ]
+
+  if RandomWalk = "constraint" [
+         set heading heading + (random (2 * max-angle)) - max-angle
+      fd step-size
+  ]
+
+  if RandomWalk = "logistic"[
+         set current-angle r * current-angle * (1 - current-angle)
+      set heading heading + current-angle * 360
+      fd 1
+      ]
+    ]
+  ]
+
+  ask turtles
+  [
+  	if [pcolor] of patch-here != lime + 3
+    [
+    	ask patch-here [set pcolor lime + 3]
+    ]
+  ]
+
+    ask turtles [
+      let overlaps other turtles-here
+      if count overlaps > 0[
+       let callerIdx who
+
+        ask overlaps[
+          create-link-with turtle callerIdx
+        ]
+      ]
+    ]
+
+    set-current-plot "apl"
+    set-current-plot-pen "walk"
+    ifelse nw:mean-path-length = False [
+      plotxy ticks 0
+    ] [
+      plotxy ticks nw:mean-path-length
+    ]
+
+    set-current-plot "clustering"
+    set-current-plot-pen "walk"
+    plotxy ticks mean [ nw:clustering-coefficient ] of turtles
+
+    set-current-plot "mean-path-length of num-nodes"
+    set-current-plot-pen "walk"
+      ifelse nw:mean-path-length = False [
+      plotxy num-nodes 0
+    ] [
+      plotxy ticks nw:mean-path-length
+    ]
+
+    tick
+    set steps steps + 1
+  ]
+
+end
+
+to bounce_turtle
+  if abs pxcor = max-pxcor
+    [ set heading (- heading) ]
+  if abs pycor = max-pycor
+    [ set heading (180 - heading) ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -258,7 +396,7 @@ num-nodes
 num-nodes
 0
 100
-83.0
+100.0
 1
 1
 NIL
@@ -266,14 +404,14 @@ HORIZONTAL
 
 SLIDER
 4
-215
+233
 176
-248
+266
 p
 p
 0
 1
-0.1
+0.01
 0.01
 1
 NIL
@@ -298,6 +436,7 @@ PENS
 "random" 1.0 1 -955883 true "" "histogram [count link-neighbors] of turtles with [color = red]"
 "small-world" 1.0 1 -13345367 true "" "histogram [count link-neighbors] of turtles with [color = blue]"
 "barabasi" 1.0 1 -10899396 true "" "histogram [count link-neighbors] of turtles with [color = green]"
+"walk" 1.0 0 -5204280 true "" "histogram [count link-neighbors] of turtles with [color = violet + 2]"
 
 MONITOR
 969
@@ -311,10 +450,10 @@ count links
 11
 
 BUTTON
-5
-466
-115
-499
+7
+569
+117
+602
 NIL
 layoutspring
 T
@@ -339,10 +478,10 @@ nw:mean-path-length
 11
 
 BUTTON
-23
-569
-155
-602
+25
+672
+157
+705
 NIL
 complete-graph
 NIL
@@ -367,10 +506,10 @@ mean [ nw:clustering-coefficient ] of turtles
 11
 
 BUTTON
-958
-698
-1069
-731
+21
+776
+132
+809
 NIL
 launch-virus
 NIL
@@ -384,25 +523,25 @@ NIL
 1
 
 SLIDER
-958
-732
-1130
-765
+21
+810
+193
+843
 transmission
 transmission
 0
 1
-1.0
+0.7
 0.01
 1
 NIL
 HORIZONTAL
 
 BUTTON
-1070
-699
-1214
-732
+133
+777
+277
+810
 NIL
 make-step-simple
 NIL
@@ -416,10 +555,10 @@ NIL
 1
 
 PLOT
-958
-766
-1162
-924
+21
+844
+225
+1002
 infected-healthy
 NIL
 NIL
@@ -436,9 +575,9 @@ PENS
 
 BUTTON
 2
-181
+199
 149
-218
+236
 random
 refresh\nnw:generate-random turtles links num-nodes p [ set color orange ]\nlayout-circle turtles 15
 NIL
@@ -453,9 +592,9 @@ NIL
 
 TEXTBOX
 3
-165
-153
 183
+153
+201
 nw extension
 11
 0.0
@@ -479,10 +618,10 @@ NIL
 1
 
 BUTTON
-3
-250
-152
-285
+5
+309
+154
+344
 small-world
 refresh\nnw:generate-watts-strogatz turtles links num-nodes small-world-initial-neighbors small-world-rewiring-p [ fd 10 ]\nask turtles [set color blue]\nlayout-circle turtles 15\ntick
 NIL
@@ -496,10 +635,10 @@ NIL
 1
 
 BUTTON
-122
-465
-225
-498
+124
+568
+227
+601
 layoutcircle
 layout-circle turtles 15
 NIL
@@ -513,10 +652,10 @@ NIL
 1
 
 BUTTON
-4
-359
-155
-395
+7
+463
+158
+499
 barabasi
 refresh\nnw:generate-preferential-attachment turtles links num-nodes barabasi-edges-per-node [ set color green ]\nlayout-circle turtles 15\ntick
 NIL
@@ -530,10 +669,10 @@ NIL
 1
 
 BUTTON
-23
-535
-86
-568
+25
+638
+88
+671
 ring
 nw:generate-ring turtles links num-nodes [ set color blue ]
 NIL
@@ -547,10 +686,10 @@ NIL
 1
 
 BUTTON
-97
-537
-163
-570
+99
+640
+165
+673
 wheel
 nw:generate-wheel turtles links num-nodes [ set color blue ]
 NIL
@@ -564,10 +703,10 @@ NIL
 1
 
 BUTTON
-1215
-699
-1372
-732
+278
+777
+435
+810
 NIL
 make-step-complex
 NIL
@@ -581,10 +720,10 @@ NIL
 1
 
 SLIDER
-1140
-732
-1312
-765
+203
+810
+375
+843
 threshold
 threshold
 0
@@ -596,10 +735,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-951
-310
-1103
-343
+968
+313
+1120
+346
 NIL
 compare-networks
 NIL
@@ -631,12 +770,13 @@ PENS
 "random" 1.0 2 -955883 true "" ""
 "small-world" 1.0 2 -13345367 true "" ""
 "barabasi" 1.0 2 -10899396 true "" ""
+"walk" 1.0 0 -5204280 true "" ""
 
 BUTTON
 1490
-286
+317
 1800
-319
+350
 compare networks with different n of nodes
 compare-networks-with-n
 NIL
@@ -650,45 +790,45 @@ NIL
 1
 
 SLIDER
-2
-287
-203
-320
+4
+346
+205
+379
 small-world-initial-neighbors
 small-world-initial-neighbors
 0
 20
-2.0
+0.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-3
-322
-201
-355
+5
+381
+203
+414
 small-world-rewiring-p
 small-world-rewiring-p
 0
 1
-0.1
+0.45
 0.05
 1
 NIL
 HORIZONTAL
 
 SLIDER
-3
-400
-220
-433
+6
+504
+223
+537
 barabasi-edges-per-node
 barabasi-edges-per-node
 0
 20
-2.0
+0.0
 1
 1
 NIL
@@ -696,9 +836,9 @@ HORIZONTAL
 
 PLOT
 1490
-317
+348
 1868
-585
+616
 clustering
 NIL
 NIL
@@ -713,22 +853,23 @@ PENS
 "random" 1.0 0 -2674135 true "" ""
 "small-world" 1.0 0 -13345367 true "" ""
 "barabasi" 1.0 0 -10899396 true "" ""
+"walk" 1.0 0 -5204280 true "" ""
 
 TEXTBOX
-958
-680
-1108
-698
+21
+758
+171
+776
 some stuff from prac
 12
 0.0
 1
 
 BUTTON
-965
-549
-1244
-582
+966
+578
+1245
+611
 n-friends/mean-n-friends-of-neighbors
 friendship-paradox
 NIL
@@ -745,17 +886,17 @@ TEXTBOX
 967
 515
 1117
-549
-the greener - the better\nthe redder - the worse
+574
+the greener - the better\nthe redder - the worse\n
 12
 0.0
 1
 
 MONITOR
-965
-587
-1082
-632
+966
+616
+1083
+661
 number of green
 count turtles with [color > 60 and color < 70]
 0
@@ -763,10 +904,10 @@ count turtles with [color > 60 and color < 70]
 11
 
 MONITOR
-1082
-587
-1184
-632
+1083
+616
+1185
+661
 number of red
 count turtles with [color > 10 and color < 20]
 17
@@ -774,10 +915,10 @@ count turtles with [color > 10 and color < 20]
 11
 
 MONITOR
-965
-634
-1058
-679
+966
+663
+1059
+708
 mean friends
 mean [count link-neighbors] of turtles
 2
@@ -785,15 +926,138 @@ mean [count link-neighbors] of turtles
 11
 
 MONITOR
-1060
-635
-1234
-680
+1061
+664
+1235
+709
 mean friends of neighbors
 mean [mean [ count link-neighbors ] of link-neighbors] of turtles
 2
 1
 11
+
+PLOT
+1178
+328
+1481
+564
+mean-path-length of num-nodes
+num-nodes
+mean-path-length
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"random" 2.0 0 -955883 true "" ""
+"small-world" 1.0 0 -14070903 true "" ""
+"barabasi" 1.0 0 -13840069 true "" ""
+"walk" 1.0 0 -5204280 true "" ""
+
+SLIDER
+1008
+796
+1180
+829
+lambda
+lambda
+0.01
+1
+0.6
+0.01
+1
+NIL
+HORIZONTAL
+
+CHOOSER
+1009
+918
+1147
+963
+RandomWalk
+RandomWalk
+"logistic" "constraint" "diffusion" "levy" "lazy" "lattice" "pearson"
+6
+
+SLIDER
+1008
+760
+1180
+793
+step-size
+step-size
+1
+25
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1008
+837
+1180
+870
+max-angle
+max-angle
+0.5
+25
+0.5
+0.5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1009
+881
+1224
+914
+r
+r
+0.01
+25
+0.91
+0.05
+1
+NIL
+HORIZONTAL
+
+SLIDER
+1009
+977
+1202
+1010
+random-walk-steps
+random-walk-steps
+1
+300
+300.0
+1
+1
+NIL
+HORIZONTAL
+
+BUTTON
+1234
+760
+1419
+1008
+NIL
+random-walk-network
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
