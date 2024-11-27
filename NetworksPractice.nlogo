@@ -1401,6 +1401,44 @@ NIL
 NIL
 1
 
+PLOT
+1874
+663
+2292
+900
+Rumor spread (network)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"corrupted by rumor" 1.0 0 -2674135 true "" " plot count turtles with [believed-t = true]"
+"not corrupted by rumor" 1.0 0 -13345367 true "" " plot count turtles with [believed-t = false]"
+
+PLOT
+1871
+916
+2291
+1066
+Hat spread (network)
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"undressed" 1.0 0 -1184463 true "" "plot count turtles with [dressed-t = false]"
+"dressed" 1.0 0 -3508570 true "" "plot count turtles with [dressed-t = true]"
+
 @#$#@#$#@
 ## WHAT IS IT?
 
