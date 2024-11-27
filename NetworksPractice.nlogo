@@ -3,7 +3,9 @@ extensions[nw]
 turtles-own [
   infected?
   checked
-
+  is-sceptical-t
+  times-heard-rumor-t
+  believed-t
   ;walk data
   current-angle
 ]
@@ -437,6 +439,61 @@ to model-fashion-spread
   ]
 
 end
+
+to network-rumor-spread
+ask turtles [
+   set color blue
+    set believed-t false
+    set is-sceptical-t random 2 = 1
+    set times-heard-rumor-t 0
+  ]
+ask n-of (count turtles * rumor-initiators-fraction) turtles[
+    set color red
+    set believed-t true
+  ]
+    let steps 0
+  while [steps < simulation-duration-bound and count turtles with [believed-t = false] > 0][
+    if network-rumor-spread-type = "default"[
+    go-network-rsp
+    ]
+    if network-rumor-spread-type = "threshold-of-belief" [
+    go-network-rsp
+    ]
+    if network-rumor-spread-type = "2way" [
+    go-network-rsp
+    ]
+    tick
+    set steps steps + 1]
+end
+
+to go-network-rsp
+  ask turtles with [believed-t = false][
+    ask link-neighbors [
+      if not believed-t [ set believed-t true]]]
+  ask turtles with [believed-t = true][
+    set color red]
+
+end
+to go-network-rsp-threshold
+  ask turtles with [believed-t][
+    ask link-neighbors [
+      if not believed-t [
+        set times-heard-rumor-t times-heard-rumor-t + 1
+      ]
+
+  ]]
+  ask turtles with [believed-t = false][
+  if is-sceptical-t[
+    if times-heard-rumor-t >= 2[set believed-t true]
+  ]
+  if not is-sceptical-t[
+    set believed-t true]
+]
+
+end
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 237
@@ -506,7 +563,7 @@ p
 p
 0
 1
-0.32
+0.4
 0.01
 1
 NIL
@@ -626,7 +683,7 @@ transmission
 transmission
 0
 1
-0.7
+0.2
 0.01
 1
 NIL
@@ -823,7 +880,7 @@ threshold
 threshold
 0
 1
-0.45
+0.43
 0.01
 1
 NIL
@@ -893,7 +950,7 @@ small-world-initial-neighbors
 small-world-initial-neighbors
 0
 20
-20.0
+7.0
 1
 1
 NIL
@@ -908,7 +965,7 @@ small-world-rewiring-p
 small-world-rewiring-p
 0
 1
-0.45
+0.4
 0.05
 1
 NIL
@@ -923,7 +980,7 @@ barabasi-edges-per-node
 barabasi-edges-per-node
 0
 20
-0.0
+1.0
 1
 1
 NIL
@@ -1061,7 +1118,7 @@ lambda
 lambda
 0.01
 1
-0.6
+0.12
 0.01
 1
 NIL
@@ -1075,7 +1132,7 @@ CHOOSER
 RandomWalk
 RandomWalk
 "logistic" "constraint" "diffusion" "levy" "lazy" "lattice" "pearson"
-6
+0
 
 SLIDER
 533
@@ -1116,7 +1173,7 @@ r
 r
 0.01
 25
-0.91
+0.41
 0.05
 1
 NIL
@@ -1189,7 +1246,7 @@ simulation-duration-bound
 simulation-duration-bound
 2
 1000
-48.0
+342.0
 1
 1
 NIL
@@ -1277,6 +1334,33 @@ true
 PENS
 "undressed" 1.0 0 -1184463 true "" "plotxy ticks count patches with [dressed = false]"
 "dressed" 1.0 0 -3508570 true "" "plotxy ticks count patches with [dressed = true]"
+
+BUTTON
+1267
+579
+1418
+612
+NIL
+network-rumor-spread\n
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+CHOOSER
+1275
+623
+1446
+668
+network-rumor-spread-type
+network-rumor-spread-type
+"default" "threshold-of-belief" "2way"
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
