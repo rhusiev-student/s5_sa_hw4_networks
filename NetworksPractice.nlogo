@@ -6,6 +6,9 @@ turtles-own [
   is-sceptical-t
   times-heard-rumor-t
   believed-t
+  ;hats
+  fashion-threshold-t
+  dressed-t
   ;walk data
   current-angle
 ]
@@ -492,8 +495,27 @@ to go-network-rsp-threshold
 
 end
 
+to network-fashion-spread
+  ask turtles [
+    set color blue
+    set dressed-t false
+    set fashion-threshold-t random count link-neighbors
+    set color yellow
+  ]
 
+  let steps 0
+  while [steps < simulation-duration-bound and count turtles with [dressed-t = false] > 0] [
+    ask turtles with [dressed-t = false] [
+      if count link-neighbors with [dressed-t = true] >= fashion-threshold-t [
+        set dressed-t true
+        set color magenta + 2
+      ]
+    ]
 
+    tick
+    set steps steps + 1
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 237
@@ -1360,6 +1382,23 @@ CHOOSER
 network-rumor-spread-type
 network-rumor-spread-type
 "default" "threshold-of-belief" "2way"
+1
+
+BUTTON
+1261
+682
+1446
+715
+NIL
+network-fashion-spread
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
 1
 
 @#$#@#$#@
