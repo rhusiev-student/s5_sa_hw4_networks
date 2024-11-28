@@ -314,14 +314,6 @@ to random-walk-network
     set-current-plot-pen "walk"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
 
-    set-current-plot "mean-path-length of num-nodes"
-    set-current-plot-pen "walk"
-      ifelse nw:mean-path-length = False [
-      plotxy num-nodes 0
-    ] [
-      plotxy ticks nw:mean-path-length
-    ]
-
     tick
     set steps steps + 1
   ]
