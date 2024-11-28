@@ -115,14 +115,6 @@ to compare-networks-with-n
     set-current-plot-pen "random"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
 
-    set-current-plot "mean-path-length of num-nodes"
-    set-current-plot-pen "random"
-      ifelse nw:mean-path-length = False [
-      plotxy num-nodes 0
-    ] [
-      plotxy ticks nw:mean-path-length
-    ]
-
     ;small-world
     clear-turtles
     nw:generate-watts-strogatz turtles links num-nodes small-world-initial-neighbors small-world-rewiring-p [
@@ -140,14 +132,6 @@ to compare-networks-with-n
     set-current-plot-pen "small-world"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
 
-    set-current-plot "mean-path-length of num-nodes"
-    set-current-plot-pen "small-world"
-      ifelse nw:mean-path-length = False [
-      plotxy num-nodes 0
-    ] [
-      plotxy ticks nw:mean-path-length
-    ]
-
     ;barabasi
     clear-turtles
     nw:generate-preferential-attachment turtles links num-nodes barabasi-edges-per-node [ set color green ]
@@ -161,14 +145,6 @@ to compare-networks-with-n
     set-current-plot "clustering"
     set-current-plot-pen "barabasi"
     plotxy ticks mean [ nw:clustering-coefficient ] of turtles
-
-    set-current-plot "mean-path-length of num-nodes"
-    set-current-plot-pen "barabasi"
-      ifelse nw:mean-path-length = False [
-      plotxy num-nodes 0
-    ] [
-      plotxy ticks nw:mean-path-length
-    ]
 
     set num-nodes num-nodes + 1
     tick
@@ -576,7 +552,7 @@ num-nodes
 num-nodes
 0
 100
-67.0
+100.0
 1
 1
 NIL
@@ -1115,27 +1091,6 @@ mean [mean [ count link-neighbors ] of link-neighbors] of turtles
 2
 1
 11
-
-PLOT
-1178
-328
-1481
-564
-mean-path-length of num-nodes
-num-nodes
-mean-path-length
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"random" 2.0 0 -955883 true "" ""
-"small-world" 1.0 0 -14070903 true "" ""
-"barabasi" 1.0 0 -13840069 true "" ""
-"walk" 1.0 0 -5204280 true "" ""
 
 SLIDER
 533
