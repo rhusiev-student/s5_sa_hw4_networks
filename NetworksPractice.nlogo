@@ -84,7 +84,7 @@ end
 
 to compare-networks
   refresh
-  nw:generate-random turtles links num-nodes p [ set color red ]
+  nw:generate-random turtles links num-nodes p [ set color orange ]
   nw:generate-watts-strogatz turtles links num-nodes 2 p [
     fd 10
     set color blue
@@ -97,13 +97,13 @@ end
 to compare-networks-with-n
   refresh
   reset-ticks
-  set num-nodes 5
+  set num-nodes 15
 
   while [num-nodes < 100] [
 
     ;random
     clear-turtles
-    nw:generate-random turtles links num-nodes p [ set color red ]
+    nw:generate-random turtles links num-nodes p [ set color orange ]
     set-current-plot "apl"
     set-current-plot-pen "random"
     ifelse nw:mean-path-length = False [
@@ -445,7 +445,7 @@ end
 
 to network-rumor-spread
   reset-ticks  ; Reset ticks at the start
-  
+
   ask turtles [
     set color blue
     set believed-t false
@@ -467,7 +467,7 @@ to network-rumor-spread
     if network-rumor-spread-type = "2way" [
       go-network-rsp
     ]
-    
+
     tick  ; Advance time by one step
     set steps steps + 1
   ]
@@ -501,7 +501,7 @@ end
 
 to network-fashion-spread
   reset-ticks  ; Reset ticks at the start
-  
+
   ask turtles [
     set color blue
     set dressed-t false
@@ -517,7 +517,7 @@ to network-fashion-spread
         set color magenta + 2
       ]
     ]
-    
+
     tick  ; Advance time by one step
     set steps steps + 1
   ]
@@ -576,7 +576,7 @@ num-nodes
 num-nodes
 0
 100
-100.0
+67.0
 1
 1
 NIL
@@ -591,7 +591,7 @@ p
 p
 0
 1
-0.4
+0.07
 0.01
 1
 NIL
@@ -606,16 +606,16 @@ Degree distribution
 NIL
 NIL
 0.0
-10.0
-0.0
 12.0
+0.0
+1.0
 true
 true
 "" ""
 PENS
-"random" 1.0 1 -955883 true "" "histogram [count link-neighbors] of turtles with [color = red]"
-"small-world" 1.0 1 -13345367 true "" "histogram [count link-neighbors] of turtles with [color = blue]"
-"barabasi" 1.0 1 -10899396 true "" "histogram [count link-neighbors] of turtles with [color = green]"
+"random" 1.0 0 -955883 true "" "histogram [count link-neighbors] of turtles with [color = orange]"
+"small-world" 1.0 0 -13345367 true "" "histogram [count link-neighbors] of turtles with [color = blue]"
+"barabasi" 1.0 0 -10899396 true "" "histogram [count link-neighbors] of turtles with [color = green]"
 "walk" 1.0 0 -5204280 true "" "histogram [count link-neighbors] of turtles with [color = violet + 2]"
 
 MONITOR
@@ -759,7 +759,7 @@ BUTTON
 149
 236
 random
-refresh\nnw:generate-random turtles links num-nodes p [ set color orange ]\nlayout-circle turtles 15
+refresh\nnw:generate-random turtles links num-nodes p [ set color orange ]\nlayout-circle turtles 15\ntick
 NIL
 1
 T
@@ -978,7 +978,7 @@ small-world-initial-neighbors
 small-world-initial-neighbors
 0
 20
-7.0
+5.0
 1
 1
 NIL
@@ -1388,7 +1388,7 @@ CHOOSER
 network-rumor-spread-type
 network-rumor-spread-type
 "default" "threshold-of-belief" "2way"
-1
+2
 
 BUTTON
 1261
