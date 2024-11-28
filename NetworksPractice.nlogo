@@ -444,29 +444,33 @@ to model-fashion-spread
 end
 
 to network-rumor-spread
-ask turtles [
-   set color blue
+  reset-ticks  ; Reset ticks at the start
+  
+  ask turtles [
+    set color blue
     set believed-t false
     set is-sceptical-t random 2 = 1
     set times-heard-rumor-t 0
   ]
-ask n-of (count turtles * rumor-initiators-fraction) turtles[
+  ask n-of (count turtles * rumor-initiators-fraction) turtles[
     set color red
     set believed-t true
   ]
-    let steps 0
+  let steps 0
   while [steps < simulation-duration-bound and count turtles with [believed-t = false] > 0][
     if network-rumor-spread-type = "default"[
-    go-network-rsp
+      go-network-rsp
     ]
     if network-rumor-spread-type = "threshold-of-belief" [
-    go-network-rsp
+      go-network-rsp-threshold
     ]
     if network-rumor-spread-type = "2way" [
-    go-network-rsp
+      go-network-rsp
     ]
-    tick
-    set steps steps + 1]
+    
+    tick  ; Advance time by one step
+    set steps steps + 1
+  ]
 end
 
 to go-network-rsp
@@ -496,6 +500,8 @@ to go-network-rsp-threshold
 end
 
 to network-fashion-spread
+  reset-ticks  ; Reset ticks at the start
+  
   ask turtles [
     set color blue
     set dressed-t false
@@ -511,8 +517,8 @@ to network-fashion-spread
         set color magenta + 2
       ]
     ]
-
-    tick
+    
+    tick  ; Advance time by one step
     set steps steps + 1
   ]
 end
@@ -987,7 +993,7 @@ small-world-rewiring-p
 small-world-rewiring-p
 0
 1
-0.4
+0.6
 0.05
 1
 NIL
@@ -1242,7 +1248,7 @@ rumor-initiators-fraction
 rumor-initiators-fraction
 0.01
 1
-0.2
+0.01
 0.01
 1
 NIL
@@ -1417,8 +1423,8 @@ true
 true
 "" ""
 PENS
-"corrupted by rumor" 1.0 0 -2674135 true "" " plot count turtles with [believed-t = true]"
-"not corrupted by rumor" 1.0 0 -13345367 true "" " plot count turtles with [believed-t = false]"
+"corrupted by rumor" 1.0 0 -2674135 true "" "plotxy ticks count turtles with [believed-t = true]"
+"not corrupted by rumor" 1.0 0 -13345367 true "" "plotxy ticks count turtles with [believed-t = false]"
 
 PLOT
 1871
